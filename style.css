@@ -1,0 +1,445 @@
+ Reset default browser styles and set base font */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+/* Main container styling */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header section */
+header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+header h1 {
+    color: #ffffff;
+    font-size: 3em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    color: #e0e7ff;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+}
+
+/* City selector styling */
+.city-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.city-selector label {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 1.1em;
+}
+
+/* Search input box styling */
+.city-selector input[type="text"] {
+    padding: 12px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 1em;
+    width: 350px;
+    transition: all 0.3s ease;
+    outline: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+}
+
+.city-selector input[type="text"]:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+    background: white;
+}
+
+.city-selector input[type="text"]::placeholder {
+    color: #999;
+}
+
+/* Button styling */
+.city-selector button {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+}
+
+.city-selector button:hover {
+    background: linear-gradient(135deg, #357abd 0%, #2a5298 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 144, 226, 0.5);
+}
+
+.city-selector button:active {
+    transform: translateY(0);
+}
+
+/* Quick cities section */
+.quick-cities {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px;
+}
+
+.quick-label {
+    font-weight: bold;
+    color: #e0e7ff;
+    margin-right: 5px;
+}
+
+.quick-city {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+.quick-city:hover {
+    background: rgba(74, 144, 226, 0.8);
+    border-color: #4a90e2;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+}
+
+.quick-city:active {
+    transform: scale(0.95);
+}
+
+/* Loading spinner */
+.loading {
+    text-align: center;
+    padding: 60px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.spinner {
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top: 5px solid #4a90e2;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+/* Spinner animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Dashboard layout */
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Metrics row - contains the top 3 cards */
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Charts row - contains the 2 chart cards */
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 20px;
+}
+
+/* Card styling - used for all data containers */
+.card {
+    background: linear-gradient(135deg, #1a2a3a 0%, #2d4356 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(74, 144, 226, 0.3);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 20px;
+}
+
+.card-header h3 {
+    font-size: 1.3em;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* Metric value styling - large numbers */
+.metric-value {
+    font-size: 3em;
+    font-weight: bold;
+    color: #4a90e2;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(74, 144, 226, 0.3);
+}
+
+/* Metric label - description text */
+.metric-label {
+    font-size: 1.2em;
+    color: #b8c5d6;
+    margin-bottom: 15px;
+}
+
+/* Metric detail - smaller info text */
+.metric-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.95em;
+    color: #8a9fb3;
+}
+
+/* Chart card specific styling */
+.chart-card .card-body {
+    padding: 20px;
+    height: 350px;
+}
+
+/* Canvas element for charts */
+canvas {
+    max-height: 300px;
+}
+
+/* Footer section */
+.footer {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer p {
+    color: #e0e7ff;
+    margin: 5px 0;
+}
+
+.data-source {
+    font-size: 0.9em;
+    color: #b8c5d6;
+}
+
+/* Error message styling */
+.error {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.error h3 {
+    color: #ff6b6b;
+    margin-bottom: 15px;
+}
+
+.error p {
+    color: #e0e7ff;
+}
+
+.error button {
+    margin-top: 20px;
+    padding: 10px 30px;
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.error button:hover {
+    background: linear-gradient(135deg, #357abd 0%, #2a5298 100%);
+}
+
+/* Map section styling */
+.map-section {
+    width: 100%;
+}
+
+.map-card {
+    width: 100%;
+}
+
+/* Map container */
+#weatherMap {
+    width: 100%;
+    height: 450px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(74, 144, 226, 0.3);
+}
+
+/* Map controls */
+.map-controls {
+    margin-bottom: 15px;
+}
+
+.control-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.control-group label {
+    font-weight: bold;
+    color: #b8c5d6;
+    margin-right: 10px;
+}
+
+/* Layer buttons */
+.layer-btn {
+    padding: 10px 18px;
+    background: rgba(74, 144, 226, 0.2);
+    color: #b8c5d6;
+    border: 2px solid rgba(74, 144, 226, 0.3);
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.layer-btn:hover {
+    background: rgba(74, 144, 226, 0.4);
+    border-color: #4a90e2;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.layer-btn.active {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    border-color: #4a90e2;
+    color: white;
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+}
+
+/* Map legend */
+.map-legend {
+    padding: 10px;
+    background: rgba(30, 60, 114, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(74, 144, 226, 0.3);
+}
+
+.map-legend p {
+    margin: 5px 0;
+    color: #b8c5d6;
+    font-size: 0.9em;
+}
+
+.map-legend .attribution {
+    font-size: 0.8em;
+    color: #8a9fb3;
+    font-style: italic;
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+.leaflet-popup-content {
+    color: white;
+    font-weight: 500;
+}
+
+.leaflet-popup-tip {
+    background: #2a5298;
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8em;
+    }
+    
+    .metrics-row,
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .metric-value {
+        font-size: 2.5em;
+    }
+    
+    #weatherMap {
+        height: 350px;
+    }
+    
+    .control-group {
+        justify-content: center;
+    }
+    
+    .layer-btn {
+        font-size: 0.85em;
+        padding: 8px 14px;
+    }
+}
