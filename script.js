@@ -205,7 +205,7 @@ function updateAirQualityCard(data) {
     
     if (aqi <= 50) {
         aqiStatus = 'Good';
-        aqiColor = '#2ecc71';/
+        aqiColor = '#2ecc71';
     } else if (aqi <= 100) {
         aqiStatus = 'Moderate';
         aqiColor = '#f39c12';
