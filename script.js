@@ -1,3 +1,4 @@
+// ============================================
 // GLOBAL VARIABLES AND CONFIGURATION
 // ============================================
 
@@ -24,11 +25,18 @@ let currentLayer = 'none'; // Track active layer
 
 // Wait for the entire page to load before running code
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing CitiQ dashboard...');
+    
     // Set default city in search box
     document.getElementById('citySearch').value = currentCityName;
     
     // Initialize the map
-    initializeMap();
+    try {
+        initializeMap();
+        console.log('Map initialized successfully');
+    } catch (error) {
+        console.error('Map initialization error:', error);
+    }
     
     // Load data for the default city (London)
     loadCityData();
@@ -78,6 +86,8 @@ async function loadCityData() {
     // Get the city name from the global variable
     const cityName = currentCityName;
     
+    console.log('Loading data for city:', cityName);
+    
     // Show loading spinner, hide dashboard and error
     showLoading(true);
     hideError();
@@ -114,7 +124,8 @@ async function loadCityData() {
     } catch (error) {
         // If any error occurs, show error message
         console.error('Error loading city data:', error);
-        showError(`Failed to load data for "${cityName}". Please check the city name and try again.`);
+        console.error('Error details:', error.message, error.stack);
+        showError(`Failed to load data for "${cityName}". Error: ${error.message}`);
         showLoading(false);
     }
 }
@@ -126,55 +137,84 @@ async function loadCityData() {
 // Fetch current weather data by city name from OpenWeatherMap API
 // This function searches for the city and returns weather + coordinates
 async function fetchWeatherDataByCity(cityName) {
-    // Using your OpenWeatherMap API key
-    // The 'q' parameter allows us to search by city name
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&units=metric&appid=${WEATHER_KEY}`;
-    
-    // Fetch data from API
-    const response = await fetch(url);
-    
-    // Check if request was successful
-    if (!response.ok) {
-        if (response.status === 404) {
-            throw new Error('City not found. Please check the spelling.');
+    try {
+        // Using your OpenWeatherMap API key
+        // The 'q' parameter allows us to search by city name
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(cityName)}&units=metric&appid=${WEATHER_KEY}`;
+        
+        console.log('Fetching weather data from:', url.replace(WEATHER_KEY, 'API_KEY'));
+        
+        // Fetch data from API
+        const response = await fetch(url);
+        
+        // Check if request was successful
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('City not found. Please check the spelling.');
+            }
+            throw new Error(`Weather API request failed with status: ${response.status}`);
         }
-        throw new Error('Weather API request failed');
+        
+        // Convert response to JSON format
+        const data = await response.json();
+        console.log('Weather data received successfully');
+        return data;
+    } catch (error) {
+        console.error('Error in fetchWeatherDataByCity:', error);
+        throw error;
     }
-    
-    // Convert response to JSON format
-    return await response.json();
 }
 
 // Fetch 5-day weather forecast from OpenWeatherMap API
 async function fetchForecastData(lat, lon) {
-    // Using your OpenWeatherMap API key for forecast data
-    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_KEY}`;
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error('Forecast API request failed');
+    try {
+        // Using your OpenWeatherMap API key for forecast data
+        const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_KEY}`;
+        
+        console.log('Fetching forecast data...');
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Forecast API request failed with status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Forecast data received successfully');
+        return data;
+    } catch (error) {
+        console.error('Error in fetchForecastData:', error);
+        throw error;
     }
-    return await response.json();
 }
 
 // Fetch air quality data from API Ninjas
 // API Ninjas uses city name instead of coordinates
 async function fetchAirQualityData(cityName) {
-    // Using your API Ninjas key for air quality data
-    const url = `https://api.api-ninjas.com/v1/airquality?city=${encodeURIComponent(cityName)}`;
-    
-    // API Ninjas requires the key to be sent in the header
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'X-Api-Key': AQI_KEY // API Ninjas uses X-Api-Key header
+    try {
+        // Using your API Ninjas key for air quality data
+        const url = `https://api.api-ninjas.com/v1/airquality?city=${cityName}`;
+        
+        console.log('Fetching air quality data...');
+        
+        // API Ninjas requires the key to be sent in the header
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Api-Key': AQI_KEY // API Ninjas uses X-Api-Key header
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Air Quality API request failed with status: ${response.status}`);
         }
-    });
-    
-    if (!response.ok) {
-        throw new Error('Air Quality API request failed');
+        
+        const data = await response.json();
+        console.log('Air quality data received successfully');
+        return data;
+    } catch (error) {
+        console.error('Error in fetchAirQualityData:', error);
+        throw error;
     }
-    return await response.json();
 }
 
 // ============================================
