@@ -3,9 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CitiQ</title>
+    <title>CitiQ - Smart City Dashboard</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js library for creating charts - loaded from CDN (Content Delivery Network) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet.js for interactive maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    
+    <!-- Main container for the entire dashboard -->
+    <div class="container">
+        <!-- Header section with title and city selector -->
+        <header>
+            <h1>CitiQ</h1>
+            <p class="subtitle">Smart City Data Dashboard - Real-time Insights</p>
+            
+            <!-- City search bar -->
+            <div class="city-selector">
+                <label for="citySearch">🔍 Search City:</label>
+                <input 
+                    type="text" 
+                    id="citySearch" 
+                    placeholder="Enter city name (e.g., Mumbai, Berlin, Sydney...)"
+                    autocomplete="off"
+                />
+                <button id="searchBtn">Search</button>
+                <button id="refreshBtn">🔄 Refresh</button>
+            </div>
+            <!-- Popular cities quick access -->
+            <div class="quick-cities">
+                <span class="quick-label">Popular:</span>
+                <button class="quick-city" data-city="London">London</button>
+                <button class="quick-city" data-city="New York">New York</button>
+                <button class="quick-city" data-city="Tokyo">Tokyo</button>
+                <button class="quick-city" data-city="Delhi">Delhi</button>
+                <button class="quick-city" data-city="Paris">Paris</button>
+                <button class="quick-city" data-city="Mumbai">Mumbai</button>
+                <button class="quick-city" data-city="Sydney">Sydney</button>
+            </div>
+        </header>
+
+        <!-- Loading spinner - shows while data is being fetched -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading city data...</p>
+        </div>
+
+        <!-- Main dashboard content -->
+        <main id="dashboard" class="dashboard" style="display: none;">
+            <!-- Top row: Key metrics cards -->
+            <div class="metrics-row">
+                <!-- Weather card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🌤️ Weather</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-value" id="temperature">--°C</div>
+                        <div class="metric-label" id="weatherDesc">Loading...</div>
+                        <div class="metric-detail">
+                            <span>💨 Wind: <span id="windSpeed">--</span> km/h</span>
+                            <span>💧 Humidity: <span id="humidity">--</span>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Air Quality card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🌫️ Air Quality</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-value" id="aqi">--</div>
+                        <div class="metric-label" id="aqiStatus">Loading...</div>
+                        <div class="metric-detail">
+                            <span>PM2.5: <span id="pm25">--</span> μg/m³</span>
+                            <span>PM10: <span id="pm10">--</span> μg/m³</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Population/Info card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 City Info</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-label" id="cityName">City Name</div>
+                        <div class="metric-detail">
+                            <span>🌍 Lat: <span id="latitude">--</span></span>
+                            <span>🌍 Lon: <span id="longitude">--</span></span>
+                        </div>
+                        <div class="metric-detail">
+                            <span>🕐 Local Time: <span id="localTime">--</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts row -->
+            <div class="charts-row">
+                <!-- Temperature trend chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📈 Temperature Trend (5 Days)</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Air Quality components chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>🎯 Air Quality Components</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="aqChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weather Map Section -->
+            <div class="map-section">
+                <div class="card map-card">
+                    <div class="card-header">
+                        <h3>🗺️ Interactive Weather Map</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Map container -->
+                        <div id="weatherMap"></div>
+                        
+                        <!-- Map layer controls -->
+                        <div class="map-controls">
+                            <div class="control-group">
+                                <label>Map Layers:</label>
+                                <button class="layer-btn active" data-layer="none">
+                                    🗺️ Base Map
+                                </button>
+                                <button class="layer-btn" data-layer="precipitation">
+                                    🌧️ Precipitation
+                                </button>
+                                <button class="layer-btn" data-layer="clouds">
+                                    ☁️ Clouds
+                                </button>
+                                <button class="layer-btn" data-layer="wind">
+                                    💨 Wind Speed
+                                </button>
+                                <button class="layer-btn" data-layer="temp">
+                                    🌡️ Temperature
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Map legend -->
+                        <div class="map-legend">
+                            <p>📍 Red marker shows current city location</p>
+                            <p class="attribution">Map data © OpenStreetMap | Weather layers © OpenWeatherMap</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last updated timestamp -->
+            <div class="footer">
+                <p>Last updated: <span id="lastUpdate">--</span></p>
+                <p class="data-source">Data sources: OpenWeatherMap API (Weather) & API Ninjas (Air Quality)</p>
+            </div>
+        </main>
+
+        <!-- Error message display -->
+        <div id="error" class="error" style="display: none;">
+            <h3>⚠️ Error Loading Data</h3>
+            <p id="errorMessage">Something went wrong. Please try again.</p>
+            <button onclick="loadCityData()">Retry</button>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="script.js"></script>
 </body>
 </html>
