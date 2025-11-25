@@ -30,16 +30,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set default city in search box
     document.getElementById('citySearch').value = currentCityName;
     
-    // Initialize the map
-    try {
-        initializeMap();
-        console.log('Map initialized successfully');
-    } catch (error) {
-        console.error('Map initialization error:', error);
-    }
-    
     // Load data for the default city (London)
     loadCityData();
+    
+    // Initialize the map after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        try {
+            initializeMap();
+            console.log('Map initialized successfully');
+        } catch (error) {
+            console.error('Map initialization error:', error);
+        }
+    }, 500);
     
     // Add event listener to search button
     document.getElementById('searchBtn').addEventListener('click', function() {
@@ -112,6 +114,7 @@ async function loadCityData() {
         updateWeatherCard(weatherData);
         updateAirQualityCard(airQualityData);
         updateCityInfoCard(weatherData, lat, lon);
+        updateInsightsSection(weatherData, airQualityData, forecastData);
         updateTemperatureChart(forecastData);
         updateAirQualityChart(airQualityData);
         updateWeatherMap(lat, lon, weatherData.name);
@@ -235,6 +238,8 @@ function updateWeatherCard(data) {
 
 // Update the air quality card with API Ninjas data
 function updateAirQualityCard(data) {
+    console.log('Air quality data received:', data);
+    
     // API Ninjas returns overall_aqi (US EPA standard, 0-500 scale)
     const aqi = Math.round(data.overall_aqi);
     
@@ -266,8 +271,24 @@ function updateAirQualityCard(data) {
     document.getElementById('aqiStatus').textContent = aqiStatus;
     
     // API Ninjas provides PM2.5 and PM10 concentration
-    document.getElementById('pm25').textContent = data.PM2_5 ? data.PM2_5.concentration.toFixed(2) : 'N/A';
-    document.getElementById('pm10').textContent = data.PM10 ? data.PM10.concentration.toFixed(2) : 'N/A';
+    // Check different possible property names
+    let pm25Value = 'N/A';
+    let pm10Value = 'N/A';
+    
+    if (data['PM2.5'] && data['PM2.5'].concentration !== undefined) {
+        pm25Value = data['PM2.5'].concentration.toFixed(2);
+    } else if (data.PM2_5 && data.PM2_5.concentration !== undefined) {
+        pm25Value = data.PM2_5.concentration.toFixed(2);
+    }
+    
+    if (data.PM10 && data.PM10.concentration !== undefined) {
+        pm10Value = data.PM10.concentration.toFixed(2);
+    }
+    
+    document.getElementById('pm25').textContent = pm25Value;
+    document.getElementById('pm10').textContent = pm10Value;
+    
+    console.log('PM2.5:', pm25Value, 'PM10:', pm10Value);
 }
 
 // Update city information card
@@ -290,19 +311,154 @@ function updateCityInfoCard(weatherData, lat, lon) {
     document.getElementById('localTime').textContent = `${hours}:${minutes}`;
 }
 
+// Update insights section with personalized recommendations
+function updateInsightsSection(weatherData, airQualityData, forecastData) {
+    const aqi = Math.round(airQualityData.overall_aqi);
+    const temp = Math.round(weatherData.main.temp);
+    const humidity = weatherData.main.humidity;
+    const windSpeed = Math.round(weatherData.wind.speed * 3.6);
+    const weatherMain = weatherData.weather[0].main.toLowerCase();
+    const weatherDesc = weatherData.weather[0].description;
+    
+    // Check if rain is expected in forecast
+    let rainExpected = false;
+    if (forecastData && forecastData.list) {
+        // Check next 24 hours (8 data points)
+        for (let i = 0; i < Math.min(8, forecastData.list.length); i++) {
+            if (forecastData.list[i].weather[0].main.toLowerCase().includes('rain')) {
+                rainExpected = true;
+                break;
+            }
+        }
+    }
+    
+    const insights = [];
+    let overallStatus = '';
+    let statusIcon = '';
+    let statusColor = '';
+    
+    // Determine overall outdoor activity recommendation
+    if (aqi > 150 || weatherMain.includes('thunderstorm') || (weatherMain.includes('rain') && windSpeed > 40)) {
+        overallStatus = 'Stay Indoors';
+        statusIcon = '🏠';
+        statusColor = '#e74c3c';
+    } else if (aqi > 100 || temp > 38 || temp < 0 || windSpeed > 50) {
+        overallStatus = 'Limit Outdoor Activities';
+        statusIcon = '⚠️';
+        statusColor = '#f39c12';
+    } else if (aqi > 50 || weatherMain.includes('rain') || weatherMain.includes('snow')) {
+        overallStatus = 'Caution Advised';
+        statusIcon = '⚡';
+        statusColor = '#3498db';
+    } else {
+        overallStatus = 'Good to Go Outside';
+        statusIcon = '✅';
+        statusColor = '#2ecc71';
+    }
+    
+    // Air Quality insights
+    if (aqi <= 50) {
+        insights.push('🌿 <strong>Air quality is excellent!</strong> Perfect for outdoor activities and exercise.');
+    } else if (aqi <= 100) {
+        insights.push('😷 <strong>Moderate air quality.</strong> Sensitive individuals should consider limiting prolonged outdoor activities.');
+    } else if (aqi <= 150) {
+        insights.push('⚠️ <strong>Unhealthy for sensitive groups.</strong> Children, elderly, and people with respiratory issues should stay indoors.');
+    } else if (aqi <= 200) {
+        insights.push('🚨 <strong>Unhealthy air quality!</strong> Everyone should avoid outdoor activities. Wear a mask if you must go out.');
+    } else {
+        insights.push('☠️ <strong>Very unhealthy air!</strong> Stay indoors, close windows, and use air purifiers if available.');
+    }
+    
+    // Weather-based insights
+    if (weatherMain.includes('rain') || weatherMain.includes('drizzle')) {
+        insights.push('☔ <strong>It\'s raining!</strong> Carry an umbrella and wear waterproof clothing. Roads may be slippery.');
+    } else if (rainExpected) {
+        insights.push('🌧️ <strong>Rain expected soon.</strong> Carry an umbrella just in case.');
+    }
+    
+    if (weatherMain.includes('thunderstorm')) {
+        insights.push('⛈️ <strong>Thunderstorm alert!</strong> Stay indoors and avoid open areas. Unplug electronics.');
+    }
+    
+    if (weatherMain.includes('snow')) {
+        insights.push('❄️ <strong>Snowy conditions.</strong> Drive carefully, wear warm layers, and watch for ice.');
+    }
+    
+    if (weatherMain.includes('fog') || weatherMain.includes('mist')) {
+        insights.push('🌫️ <strong>Low visibility.</strong> Drive slowly and use fog lights if traveling.');
+    }
+    
+    // Temperature insights
+    if (temp > 35) {
+        insights.push('🔥 <strong>Extreme heat!</strong> Stay hydrated, avoid direct sunlight, and limit outdoor activities during peak hours.');
+    } else if (temp > 30) {
+        insights.push('☀️ <strong>Hot weather.</strong> Drink plenty of water, wear sunscreen, and seek shade when possible.');
+    } else if (temp < 0) {
+        insights.push('🥶 <strong>Freezing temperatures!</strong> Dress in warm layers, cover exposed skin, and limit time outdoors.');
+    } else if (temp < 10) {
+        insights.push('🧥 <strong>Cold weather.</strong> Wear a jacket and warm clothing when going out.');
+    }
+    
+    // Humidity insights
+    if (humidity > 80) {
+        insights.push('💦 <strong>High humidity.</strong> It may feel muggy and uncomfortable. Stay cool and hydrated.');
+    } else if (humidity < 30) {
+        insights.push('🏜️ <strong>Low humidity.</strong> Skin may feel dry. Use moisturizer and drink water.');
+    }
+    
+    // Wind insights
+    if (windSpeed > 50) {
+        insights.push('💨 <strong>Very windy!</strong> Secure loose objects and be cautious when driving or walking.');
+    } else if (windSpeed > 30) {
+        insights.push('🌬️ <strong>Windy conditions.</strong> Hold onto hats and umbrellas!');
+    }
+    
+    // Build the insights HTML
+    let insightsHTML = `
+        <div class="overall-status" style="background-color: ${statusColor}; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+            <h2 style="margin: 0; font-size: 24px;">${statusIcon} ${overallStatus}</h2>
+        </div>
+        <div class="insights-list">
+    `;
+    
+    insights.forEach(insight => {
+        insightsHTML += `<div class="insight-item">${insight}</div>`;
+    });
+    
+    insightsHTML += '</div>';
+    
+    document.getElementById('insightsContent').innerHTML = insightsHTML;
+}
+
 // Update temperature trend chart (line chart)
 function updateTemperatureChart(data) {
     // Extract forecast data - take one reading per day (every 8th item = 24 hours)
     const labels = [];
     const temperatures = [];
     
+    // Validate that we have forecast data
+    if (!data.list || data.list.length === 0) {
+        console.error('No forecast data available');
+        return;
+    }
+    
     // Loop through forecast data (every 8th item = once per day)
     for (let i = 0; i < data.list.length; i += 8) {
         const item = data.list[i];
-        // Format date as "Mon 15"
-        const date = new Date(item.dt * 1000);
-        labels.push(date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
-        temperatures.push(Math.round(item.main.temp));
+        
+        // Validate that temperature data exists and is valid
+        if (item && item.main && typeof item.main.temp === 'number' && !isNaN(item.main.temp)) {
+            // Format date as "Mon 15"
+            const date = new Date(item.dt * 1000);
+            labels.push(date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
+            temperatures.push(Math.round(item.main.temp * 10) / 10); // Round to 1 decimal
+        }
+    }
+    
+    // If no valid data points, don't create chart
+    if (temperatures.length === 0) {
+        console.error('No valid temperature data points');
+        return;
     }
     
     // Get canvas element for chart
@@ -312,6 +468,17 @@ function updateTemperatureChart(data) {
     if (tempChart) {
         tempChart.destroy();
     }
+    
+    // Calculate min and max temperatures for better Y-axis range
+    const minTemp = Math.min(...temperatures);
+    const maxTemp = Math.max(...temperatures);
+    
+    // Add padding to the range (5 degrees on each side)
+    const tempRange = maxTemp - minTemp;
+    const padding = Math.max(5, tempRange * 0.2); // At least 5 degrees padding
+    
+    const yMin = Math.floor(minTemp - padding);
+    const yMax = Math.ceil(maxTemp + padding);
     
     // Create new line chart using Chart.js
     tempChart = new Chart(ctx, {
@@ -325,7 +492,8 @@ function updateTemperatureChart(data) {
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 borderWidth: 3,
                 fill: true,
-                tension: 0.4 // Makes the line curved
+                tension: 0.4, // Makes the line curved
+                spanGaps: false // Don't connect points if there are gaps
             }]
         },
         options: {
@@ -340,9 +508,12 @@ function updateTemperatureChart(data) {
             scales: {
                 y: {
                     beginAtZero: false,
+                    min: yMin,
+                    max: yMax,
                     ticks: {
+                        stepSize: 1, // Show every 1 degree
                         callback: function(value) {
-                            return value + '°C';
+                            return Math.round(value) + '°C';
                         }
                     }
                 }
@@ -381,42 +552,49 @@ function updateAirQualityChart(data) {
     let colorIndex = 0;
     
     // Check which pollutants are available and add them to the chart
-    if (data.CO) {
+    if (data.CO && data.CO.concentration !== undefined) {
         labels.push('CO');
         concentrations.push(data.CO.concentration);
         colors.push(colorPalette[colorIndex].bg);
         borderColors.push(colorPalette[colorIndex].border);
         colorIndex++;
     }
-    if (data.NO2) {
+    if (data.NO2 && data.NO2.concentration !== undefined) {
         labels.push('NO₂');
         concentrations.push(data.NO2.concentration);
         colors.push(colorPalette[colorIndex].bg);
         borderColors.push(colorPalette[colorIndex].border);
         colorIndex++;
     }
-    if (data.O3) {
+    if (data.O3 && data.O3.concentration !== undefined) {
         labels.push('O₃');
         concentrations.push(data.O3.concentration);
         colors.push(colorPalette[colorIndex].bg);
         borderColors.push(colorPalette[colorIndex].border);
         colorIndex++;
     }
-    if (data.PM2_5) {
+    // Check both PM2.5 and PM2_5 property names
+    if (data['PM2.5'] && data['PM2.5'].concentration !== undefined) {
+        labels.push('PM2.5');
+        concentrations.push(data['PM2.5'].concentration);
+        colors.push(colorPalette[colorIndex].bg);
+        borderColors.push(colorPalette[colorIndex].border);
+        colorIndex++;
+    } else if (data.PM2_5 && data.PM2_5.concentration !== undefined) {
         labels.push('PM2.5');
         concentrations.push(data.PM2_5.concentration);
         colors.push(colorPalette[colorIndex].bg);
         borderColors.push(colorPalette[colorIndex].border);
         colorIndex++;
     }
-    if (data.PM10) {
+    if (data.PM10 && data.PM10.concentration !== undefined) {
         labels.push('PM10');
         concentrations.push(data.PM10.concentration);
         colors.push(colorPalette[colorIndex].bg);
         borderColors.push(colorPalette[colorIndex].border);
         colorIndex++;
     }
-    if (data.SO2) {
+    if (data.SO2 && data.SO2.concentration !== undefined) {
         labels.push('SO₂');
         concentrations.push(data.SO2.concentration);
         colors.push(colorPalette[colorIndex].bg);
@@ -505,41 +683,74 @@ function hideError() {
 
 // Initialize the Leaflet map
 function initializeMap() {
-    // Create map centered on London (default)
-    map = L.map('weatherMap').setView([51.5074, -0.1278], 10);
+    // Check if map container exists
+    const mapContainer = document.getElementById('weatherMap');
+    if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+    }
     
-    // Add OpenStreetMap base layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
+    // If map already exists, don't reinitialize
+    if (map) {
+        console.log('Map already initialized');
+        return;
+    }
     
-    // Add initial marker for London
-    cityMarker = L.marker([51.5074, -0.1278]).addTo(map);
-    cityMarker.bindPopup('<b>London</b><br>Loading weather data...').openPopup();
-    
-    // Add event listeners to layer buttons
-    const layerButtons = document.querySelectorAll('.layer-btn');
-    layerButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            layerButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Get selected layer
-            const layer = this.getAttribute('data-layer');
-            currentLayer = layer;
-            
-            // Update weather layer
-            updateWeatherLayer(layer);
+    try {
+        // Create map centered on London (default)
+        map = L.map('weatherMap').setView([51.5074, -0.1278], 10);
+        
+        // Add OpenStreetMap base layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+        
+        // Add initial marker for London
+        cityMarker = L.marker([51.5074, -0.1278]).addTo(map);
+        cityMarker.bindPopup('<b>London</b><br>Loading weather data...').openPopup();
+        
+        // Force map to refresh its size
+        setTimeout(() => {
+            if (map) {
+                map.invalidateSize();
+            }
+        }, 100);
+        
+        // Add event listeners to layer buttons
+        const layerButtons = document.querySelectorAll('.layer-btn');
+        layerButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                layerButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Get selected layer
+                const layer = this.getAttribute('data-layer');
+                currentLayer = layer;
+                
+                // Update weather layer
+                updateWeatherLayer(layer);
+            });
         });
-    });
+    } catch (error) {
+        console.error('Error initializing map:', error);
+    }
 }
 
 // Update map location and marker when city changes
 function updateWeatherMap(lat, lon, cityName) {
-    if (!map) return;
+    // Initialize map if it doesn't exist yet
+    if (!map) {
+        console.log('Map not initialized, initializing now...');
+        initializeMap();
+        // Wait a bit for map to initialize
+        setTimeout(() => {
+            updateWeatherMap(lat, lon, cityName);
+        }, 500);
+        return;
+    }
     
     // Update map center and zoom
     map.setView([lat, lon], 10);
@@ -549,6 +760,9 @@ function updateWeatherMap(lat, lon, cityName) {
         cityMarker.setLatLng([lat, lon]);
         cityMarker.bindPopup(`<b>${cityName}</b><br>Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`).openPopup();
     }
+    
+    // Refresh map size in case container was hidden
+    map.invalidateSize();
     
     // Refresh weather layer if one is active
     if (currentLayer !== 'none') {

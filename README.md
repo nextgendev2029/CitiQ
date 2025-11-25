@@ -4,10 +4,15 @@ A real-time data visualization dashboard that displays weather, air quality, and
 
 ## 📋 Features
 
+- **🎯 Smart Recommendations**: Personalized insights and warnings based on weather and air quality
+  - Should you go outside? Stay indoors? The dashboard tells you!
+  - Weather-specific advice (rain, thunderstorms, extreme temperatures, etc.)
+  - Air quality health recommendations
+  - Color-coded status indicators (Green = Safe, Orange = Caution, Red = Stay Indoors)
 - **Real-time Weather Data**: Current temperature, weather conditions, wind speed, and humidity
 - **Air Quality Monitoring**: AQI (Air Quality Index) with PM2.5 and PM10 pollutant data
 - **Interactive Charts**: 
-  - 5-day temperature forecast (line chart)
+  - 5-day temperature forecast with smart Y-axis scaling (line chart)
   - Air quality components visualization (bar chart)
 - **Interactive Weather Map**: 
   - Live map with city location marker
@@ -35,23 +40,28 @@ A real-time data visualization dashboard that displays weather, air quality, and
    - `index.html`
    - `style.css`
    - `script.js`
+   - `js/` folder (optional - contains modular code for reference)
 
 2. **Open the project**:
    - Simply double-click on `index.html` to open it in your browser
    - OR right-click → Open with → Your preferred browser
 
-3. **That's it!** The dashboard will automatically load data for London
+3. **That's it!** The dashboard will automatically load data for London with personalized recommendations
 
 ## 🔍 How to Use
 
 1. **Search any city**: Type any city name in the search box (e.g., "Mumbai", "Berlin", "Sydney")
 2. **Press Enter** or click the "Search" button
 3. **Quick access**: Click any popular city button for instant results
-4. **Explore the map**: 
+4. **Check recommendations**: View personalized insights at the top of the dashboard
+   - See if it's safe to go outside
+   - Get weather-specific warnings (rain, extreme heat/cold, etc.)
+   - Receive air quality health advice
+5. **Explore the map**: 
    - Click layer buttons to view precipitation, clouds, wind, or temperature overlays
    - Zoom in/out and pan around to explore the area
    - Red marker shows the current city location
-5. **Refresh**: Click the refresh button to update data for the current city
+6. **Refresh**: Click the refresh button to update data for the current city
 
 ## 🔑 API Information
 
@@ -65,6 +75,50 @@ Your API keys are already configured in `script.js`:
 const WEATHER_KEY = "78347bcb290e1b188463c4f05bbe1aeb"; // OpenWeatherMap
 const AQI_KEY = "7BzLpUOUorQPyzPaOjn/EA==Dn4RLcCKEriCQ7Be"; // API Ninjas
 ```
+
+### ⚠️ Important Note on API Key Security
+
+**Current Implementation (Frontend-Only):**
+- API keys are exposed in the client-side JavaScript code
+- This is acceptable for **learning projects** and **free-tier API keys** with rate limits
+- Both APIs have built-in rate limiting to prevent abuse
+
+**Production Best Practices:**
+For a production application, you should:
+
+1. **Use a Backend Server** (Node.js, Python, etc.):
+   ```
+   Frontend → Backend Server → External APIs
+   ```
+   - Store API keys in `.env` files on the server
+   - Never commit `.env` files to Git (add to `.gitignore`)
+   - Frontend calls your backend, backend calls external APIs
+
+2. **Environment Variables Example** (Node.js):
+   ```javascript
+   // .env file (never commit this!)
+   WEATHER_KEY=your_key_here
+   AQI_KEY=your_key_here
+   
+   // server.js
+   require('dotenv').config();
+   const weatherKey = process.env.WEATHER_KEY;
+   ```
+
+3. **Additional Security Measures**:
+   - Implement API key rotation
+   - Use API key restrictions (domain/IP whitelisting)
+   - Add rate limiting on your backend
+   - Monitor API usage for suspicious activity
+
+**Why This Project Exposes Keys:**
+- Pure HTML/CSS/JavaScript project (no backend)
+- Educational purpose to demonstrate API integration
+- Free-tier keys with limited quota
+- Easier for beginners to understand and run
+
+**For Your Next Project:**
+Consider using a backend framework (Express.js, Flask, Django) to properly secure API keys!
 
 ## 📊 Data Sources
 
@@ -107,10 +161,16 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 - Check your internet connection
 - Make sure you're not blocking API requests
 - Open browser console (F12) to see error messages
+- Check if API keys have reached their rate limit
 
 **Charts not showing?**
 - Ensure Chart.js CDN is loading (check internet connection)
 - Clear browser cache and refresh
+
+**API Rate Limit Exceeded?**
+- Free tier APIs have daily/hourly limits
+- Wait for the limit to reset (usually 24 hours)
+- Or get your own API keys from OpenWeatherMap and API Ninjas
 
 ## 📝 Project Structure
 
@@ -132,13 +192,15 @@ CitiQ/
 ## 🎓 Learning Points
 
 This project demonstrates:
-- API integration and data fetching
+- Multi-API integration and data fetching
 - Asynchronous JavaScript (async/await)
-- DOM manipulation
-- Data visualization with Chart.js
+- DOM manipulation and dynamic content generation
+- Data visualization with Chart.js (with smart axis scaling)
+- Interactive maps with Leaflet.js
+- Conditional logic for personalized recommendations
 - Responsive web design
-- Error handling
-- Modern CSS (flexbox, grid, animations)
+- Error handling and data validation
+- Modern CSS (flexbox, grid, animations, gradients)
 
 ## 📄 License
 

@@ -183,6 +183,45 @@ header h1 {
     gap: 30px;
 }
 
+/* Insights section styling */
+.insights-section {
+    width: 100%;
+}
+
+.insights-card {
+    background: linear-gradient(135deg, #1a2a3a 0%, #2d4356 100%);
+}
+
+.insights-card .card-body {
+    padding: 20px;
+}
+
+.insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.insight-item {
+    background: rgba(74, 144, 226, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #4a90e2;
+    color: #e0e7ff;
+    font-size: 1em;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+}
+
+.insight-item:hover {
+    background: rgba(74, 144, 226, 0.2);
+    transform: translateX(5px);
+}
+
+.insight-item strong {
+    color: #ffffff;
+}
+
 /* Metrics row - contains the top 3 cards */
 .metrics-row {
     display: grid;

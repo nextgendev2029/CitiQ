@@ -8,13 +8,29 @@ function updateTemperatureChart(data) {
     const labels = [];
     const temperatures = [];
     
+    // Validate that we have forecast data
+    if (!data.list || data.list.length === 0) {
+        console.error('No forecast data available');
+        return;
+    }
+    
     // Loop through forecast data (every 8th item = once per day)
     for (let i = 0; i < data.list.length; i += 8) {
         const item = data.list[i];
-        // Format date as "Mon 15"
-        const date = new Date(item.dt * 1000);
-        labels.push(date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
-        temperatures.push(Math.round(item.main.temp));
+        
+        // Validate that temperature data exists and is valid
+        if (item && item.main && typeof item.main.temp === 'number' && !isNaN(item.main.temp)) {
+            // Format date as "Mon 15"
+            const date = new Date(item.dt * 1000);
+            labels.push(date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
+            temperatures.push(Math.round(item.main.temp * 10) / 10); // Round to 1 decimal
+        }
+    }
+    
+    // If no valid data points, don't create chart
+    if (temperatures.length === 0) {
+        console.error('No valid temperature data points');
+        return;
     }
     
     // Get canvas element for chart
@@ -37,7 +53,8 @@ function updateTemperatureChart(data) {
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
                 borderWidth: 3,
                 fill: true,
-                tension: 0.4 // Makes the line curved
+                tension: 0.4, // Makes the line curved
+                spanGaps: false // Don't connect points if there are gaps
             }]
         },
         options: {
